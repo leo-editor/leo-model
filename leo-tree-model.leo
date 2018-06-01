@@ -86,12 +86,19 @@
 </v>
 <v t="ekr.20180531162551.1"><vh>traverse stats</vh></v>
 <v t="ekr.20180531204503.1"><vh>----- traversal</vh>
-<v t="vitalije.20180515103828.1"><vh>draw_tree</vh></v>
+<v t="vitalije.20180515103828.1"><vh>draw_tree &amp; bridge_items</vh>
+<v t="ekr.20180601045054.1"><vh>&lt;&lt; define bridge_items &gt;&gt;</vh></v>
+</v>
 <v t="vitalije.20180515122209.1"><vh>display_items</vh></v>
 <v t="vitalije.20180516131800.1"><vh>topIndex_write</vh></v>
 </v>
 </v>
 <v t="vitalije.20180514194301.1"><vh>@file miniTkLeo.py</vh></v>
+<v t="vitalije.20180515122209.1"></v>
+<v t="vitalije.20180515103828.1"></v>
+<v t="vitalije.20180518132651.1"><vh>click_pmicon</vh></v>
+<v t="vitalije.20180518132658.1"><vh>click_h</vh></v>
+<v t="ekr.20180601055705.1"><vh>New profile stats</vh></v>
 </vnodes>
 <tnodes>
 <t tx="ekr.20180529183702.1">def viter():
@@ -314,13 +321,10 @@ if not in_doc and not line.strip().startswith(delim_st+'@'):
     g.cls()
     if profile_redraw:
         cProfile.runctx('traverse_speed_helper()',
-            globals(),
-            locals(),
-            'profile_stats', # 'profile-%s.out' % process_name
-        )
+            globals(), locals(), 'profile_stats')
         print('===== starting profile_stats')
         p = pstats.Stats('profile_stats')
-        p.sort_stats('ncalls').print_stats(100)
+        p.sort_stats('tottime').print_stats(100)
             # p.strip_dirs().
             # .print_stats('leoDataModel.py', 50)
     else:
@@ -362,7 +366,9 @@ def traverse_speed_helper():
 
 G.app.bind_all('&lt;Shift-F10&gt;', traverse_speed)
 </t>
-<t tx="ekr.20180531162551.1">TotTime:
+<t tx="ekr.20180531162551.1">1000 iterations in   2.22 sec
+
+TotTime:
     ncalls  tottime  percall  cumtime  percall filename:lineno(function)
       2001    0.162    0.000    1.995    0.001 miniTkLeo.py:302(draw_loop)
      30005    0.074    0.000    0.091    0.000 leoDataModel.py:482(display_items)
@@ -476,6 +482,70 @@ if TEST:
             self.marked = set()
             self.selectedPosition = None
             self.gnx2pos = defaultdict(list)</t>
+<t tx="ekr.20180601045054.1">def bridge_items(skip=0, count=None):
+    '''
+    A generator yielding tuples for visible, non-skipped items:
+    
+    (pos, gnx, h, levels[i], plusMinusIcon, iconVal, selInd == i)
+    '''
+    # g.trace('skip', skip, 'count', count)
+    c = G.c
+    selInd = ltm.selectedIndex
+    # print('bridge_items: selInd: %s, skip: %s, count: %s' % (selInd, skip, count))
+    i = 1
+    p = c.rootPosition()
+    while p and (count is None or count &gt; 0):
+        # g.trace(p.h)
+        if skip &gt; 0:
+            skip -= 1
+        else:
+            # There is one less line to be drawn.
+            if count is not None:
+                count -= 1
+            # Compute the iconVal for the icon box.
+            iconVal = 1 if p.b else 0
+            if p.isMarked(): iconVal += 2
+            if p.isCloned(): iconVal += 4
+            # Compute the +- icon if the node has children.
+            if p.hasChildren():
+                plusMinusIcon = 'minus' if p.isExpanded() else 'plus'
+            else:
+                plusMinusIcon = 'none'
+            # Yield a tuple describing the line to be drawn.
+            yield p, p.gnx, p.h, p.level()+1, plusMinusIcon, iconVal, selInd == i
+        i += 1
+        p.moveToVisNext(c)
+</t>
+<t tx="ekr.20180601055705.1">bridge = False
+
+1000 iterations in   2.22 sec
+
+TotTime:
+    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      2001    0.162    0.000    1.995    0.001 miniTkLeo.py:302(draw_loop)
+     30005    0.074    0.000    0.091    0.000 leoDataModel.py:482(display_items)
+     
+bridge = True
+
+1000 iterations in   2.66 sec
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   103079    0.875    0.000    1.798    0.000 {method 'call' of '_tkinter.tkapp' objects}
+     2001    0.118    0.000    2.424    0.001 miniTkLeo.py:284(draw_tree)
+    14007    0.083    0.000    0.643    0.000 leoNodes.py:846(isVisible)
+    18009    0.082    0.000    1.064    0.000 miniTkLeo.py:289(bridge_items)
+    56028    0.078    0.000    0.169    0.000 leoCommands.py:991(positionExists)
+   184092    0.076    0.000    0.076    0.000 leoNodes.py:198(__init__)
+   168084    0.074    0.000    0.138    0.000 leoNodes.py:1338(copy)
+    84042    0.067    0.000    0.216    0.000 leoNodes.py:528(self_and_siblings)
+    70035    0.064    0.000    0.088    0.000 leoNodes.py:1150(moveToNext)
+    16008    0.056    0.000    0.822    0.000 leoNodes.py:1257(moveToVisNext)
+   424879    0.055    0.000    0.055    0.000 {built-in method builtins.isinstance}
+    70035    0.046    0.000    0.060    0.000 leoNodes.py:212(__eq__)
+    56028    0.039    0.000    0.208    0.000 leoNodes.py:824(isAncestorOf)
+    88044    0.027    0.000    0.027    0.000 leoNodes.py:1025(_parentVnode)
+    56028    0.027    0.000    0.031    0.000 leoNodes.py:2245(isNthChildOf)
+   206103    0.026    0.000    0.026    0.000 leoNodes.py:282(__bool__)</t>
 <t tx="vitalije.20180510103732.1">def load_derived_file(lines):
     '''A generator yielding tuples: (gnx, h, b, level).'''
     # pylint: disable=no-member
@@ -833,6 +903,16 @@ interested to check.
 </t>
 <t tx="vitalije.20180515103828.1">def draw_tree(canv, ltm):
     '''Redraw the entire visible part of the tree.'''
+    g = G.g
+    &lt;&lt; define bridge_items &gt;&gt;
+    assert g
+    if bridge:
+        display_items = bridge_items
+        # def display_items(skip, count):
+            # for z in bridge_items(self=ltm, skip=skip, count=count):
+                # yield z
+    else:
+        display_items = ltm.display_items
     HR = 24 # pixels/per row
     LW = 2 * HR
     count = rows_count(HR)
@@ -847,8 +927,8 @@ interested to check.
     # The main drawing loop.
     # Each row consists of 3 items: the checkbox, icon and text.
     #
-    i = 1 # The global row.
-    for j, dd in enumerate(ltm.display_items(skip=G.topIndex.get(), count=count)):
+    i, j = 1, 0 # The global row.
+    for j, dd in enumerate(display_items(skip=G.topIndex.get(), count=count)):
         p, gnx, h, lev, pm, iconVal, sel = dd
             # The tuples yielded from display_items.
         plusMinusIcon = getattr(G.icons, pm)
@@ -889,6 +969,7 @@ interested to check.
     # Hide any extra item on canvas 
     for item in items[i + 3:]:
         canv.coords(item, 0, -200)
+    # g.trace('DREW %s nodes' % (j+1))
 </t>
 <t tx="vitalije.20180515122209.1">def display_items(self, skip=0, count=None):
     '''
@@ -1277,6 +1358,34 @@ nnds = nodes[i:B]
     # Hide any extra item on canvas 
     for item in items[i + 3:]:
         canv.coords(item, 0, -200)
+</t>
+<t tx="vitalije.20180518132651.1">def click_pmicon(j):
+    def switchExpand(x):
+        ltm = G.ltm
+        p = ltm.visible_positions[j + G.topIndex.get()]
+        if p in ltm.expanded:
+            ltm.expanded.remove(p)
+            ltm.selectedPosition = p
+            i = ltm.selectedIndex
+            bstr = ltm.attrs[ltm.nodes[i]][1] if i &gt; -1 else ''
+            G.body.setBodyTextSilently(bstr)
+        else:
+            ltm.expanded.add(p)
+        draw_tree(G.tree, ltm)
+        ltm.invalidate_visual()
+    return switchExpand
+</t>
+<t tx="vitalije.20180518132658.1">def click_h(j):
+    def select_p(x):
+        ltm = G.ltm
+        p = ltm.visible_positions[j + G.topIndex.get()]
+        i = ltm.positions.index(p)
+        gnx = ltm.nodes[i]
+        ltm.selectedPosition = p
+        G.body.setBodyTextSilently(ltm.attrs[gnx][1])
+        draw_tree(G.tree, ltm)
+        ltm.invalidate_visual()
+    return select_p
 </t>
 </tnodes>
 </leo_file>

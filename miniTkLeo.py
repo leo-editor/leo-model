@@ -4,12 +4,9 @@
 # pylint: disable=invalid-name
 # pylint: disable=no-member
 G = None
-legacy = True
+bridge = True
 #@+<< imports >>
 #@+node:vitalije.20180518115138.1: ** << imports >>
-# if not legacy:
-    # import leo.core.leoGlobals as g
-    # assert g
 import datetime
 import cProfile
 import pstats
@@ -46,7 +43,7 @@ class bunch:
 #@+node:vitalije.20180518132658.1: ** click_h
 def click_h(j):
     def select_p(x):
-        ltm= G.ltm
+        ltm = G.ltm
         p = ltm.visible_positions[j + G.topIndex.get()]
         i = ltm.positions.index(p)
         gnx = ltm.nodes[i]
@@ -207,13 +204,10 @@ def connect_handlers():
         g.cls()
         if profile_redraw:
             cProfile.runctx('traverse_speed_helper()',
-                globals(),
-                locals(),
-                'profile_stats', # 'profile-%s.out' % process_name
-            )
+                globals(), locals(), 'profile_stats')
             print('===== starting profile_stats')
             p = pstats.Stats('profile_stats')
-            p.sort_stats('ncalls').print_stats(100)
+            p.sort_stats('tottime').print_stats(100)
                 # p.strip_dirs().
                 # .print_stats('leoDataModel.py', 50)
         else:
@@ -286,9 +280,54 @@ def connect_handlers():
     G.app.bind_all('<F10>', speedtest)
 
     topIndex.trace_add('write', topIndex_write)
-#@+node:vitalije.20180515103828.1: ** draw_tree
+#@+node:vitalije.20180515103828.1: ** draw_tree & bridge_items
 def draw_tree(canv, ltm):
     '''Redraw the entire visible part of the tree.'''
+    g = G.g
+    #@+<< define bridge_items >>
+    #@+node:ekr.20180601045054.1: *3* << define bridge_items >>
+    def bridge_items(skip=0, count=None):
+        '''
+        A generator yielding tuples for visible, non-skipped items:
+        
+        (pos, gnx, h, levels[i], plusMinusIcon, iconVal, selInd == i)
+        '''
+        # g.trace('skip', skip, 'count', count)
+        c = G.c
+        selInd = ltm.selectedIndex
+        # print('bridge_items: selInd: %s, skip: %s, count: %s' % (selInd, skip, count))
+        i = 1
+        p = c.rootPosition()
+        while p and (count is None or count > 0):
+            # g.trace(p.h)
+            if skip > 0:
+                skip -= 1
+            else:
+                # There is one less line to be drawn.
+                if count is not None:
+                    count -= 1
+                # Compute the iconVal for the icon box.
+                iconVal = 1 if p.b else 0
+                if p.isMarked(): iconVal += 2
+                if p.isCloned(): iconVal += 4
+                # Compute the +- icon if the node has children.
+                if p.hasChildren():
+                    plusMinusIcon = 'minus' if p.isExpanded() else 'plus'
+                else:
+                    plusMinusIcon = 'none'
+                # Yield a tuple describing the line to be drawn.
+                yield p, p.gnx, p.h, p.level()+1, plusMinusIcon, iconVal, selInd == i
+            i += 1
+            p.moveToVisNext(c)
+    #@-<< define bridge_items >>
+    assert g
+    if bridge:
+        display_items = bridge_items
+        # def display_items(skip, count):
+            # for z in bridge_items(self=ltm, skip=skip, count=count):
+                # yield z
+    else:
+        display_items = ltm.display_items
     HR = 24 # pixels/per row
     LW = 2 * HR
     count = rows_count(HR)
@@ -303,8 +342,8 @@ def draw_tree(canv, ltm):
     # The main drawing loop.
     # Each row consists of 3 items: the checkbox, icon and text.
     #
-    i = 1 # The global row.
-    for j, dd in enumerate(ltm.display_items(skip=G.topIndex.get(), count=count)):
+    i, j = 1, 0 # The global row.
+    for j, dd in enumerate(display_items(skip=G.topIndex.get(), count=count)):
         p, gnx, h, lev, pm, iconVal, sel = dd
             # The tuples yielded from display_items.
         plusMinusIcon = getattr(G.icons, pm)
@@ -345,6 +384,7 @@ def draw_tree(canv, ltm):
     # Hide any extra item on canvas 
     for item in items[i + 3:]:
         canv.coords(item, 0, -200)
+    # g.trace('DREW %s nodes' % (j+1))
 #@+node:vitalije.20180514223632.1: ** main
 def main(fname):
     #@+others
@@ -430,7 +470,7 @@ def main(fname):
                 draw_tree(G.tree, ltm)
                 tend = time.monotonic()
                 t1 = (tend - tstart)
-                if legacy:
+                if bridge:
                     logW.insert('end', '***Bridge loaded***\n')
                 logW.insert('end', 'External files loaded in %.3fs\n'%t1)
             except queue.Empty:
@@ -440,7 +480,7 @@ def main(fname):
         app.after_idle(f_later)
     #@-others
     c = None
-    if legacy:
+    if bridge:
         import leo.core.leoBridge as leoBridge
         controller = leoBridge.controller(gui='nullGui',
             loadPlugins=False,
