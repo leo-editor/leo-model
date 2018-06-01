@@ -4,10 +4,12 @@
 # pylint: disable=invalid-name
 # pylint: disable=no-member
 G = None
+legacy = True
 #@+<< imports >>
 #@+node:vitalije.20180518115138.1: ** << imports >>
-import leo.core.leoGlobals as g
-assert g
+if not legacy:
+    import leo.core.leoGlobals as g
+    assert g
 import datetime
 import cProfile
 import pstats
@@ -34,9 +36,8 @@ assert paths
 #@-<< imports >>
 profile_load = False
 profile_redraw = True
+anglestr = None # set in main
 
-g.cls()
-anglestr = g.angleBrackets
 #@+others
 #@+node:vitalije.20180515103819.1: ** class bunch
 class bunch:
@@ -346,7 +347,7 @@ def draw_tree(canv, ltm):
         canv.coords(item, 0, -200)
 #@+node:vitalije.20180514223632.1: ** main
 def main(fname):
-    tstart = time.monotonic()
+    global anglestr
     #@+others
     #@+node:vitalije.20180518114847.1: *3* create_app
     def create_app():
@@ -430,6 +431,8 @@ def main(fname):
                 draw_tree(G.tree, ltm)
                 tend = time.monotonic()
                 t1 = (tend - tstart)
+                if legacy:
+                    logW.insert('end', '***Bridge loaded***\n')
                 logW.insert('end', 'External files loaded in %.3fs\n'%t1)
             except queue.Empty:
                 app.after(100, update_model)
@@ -437,11 +440,29 @@ def main(fname):
         threading.Thread(target=loadex, name='externals-loader').start()
         app.after_idle(f_later)
     #@-others
+    c = None
+    if legacy:
+        import leo.core.leoBridge as leoBridge
+        controller = leoBridge.controller(gui='nullGui',
+            loadPlugins=False,
+            readSettings=False,
+            silent=False, # Print signons, so we know why loading is slow.  
+            verbose=False,
+        )
+        g = controller.globals()
+        c = controller.openLeoFile(fname)
+    else:
+        g.cls()
+    anglestr = g.angleBrackets
+    #
+    tstart = time.monotonic()
     ltm, ltmbytes = load_xml(fname)
     app = create_app()
     f1, f2, bodyW, canvW, logW = create_gui(app)
     start_thread(app, f1, f2, ltmbytes)
     return bunch(
+        c=c, # EKR
+        g=g, # EKR
         ltm=ltm,
         app=app,
         tree=canvW,

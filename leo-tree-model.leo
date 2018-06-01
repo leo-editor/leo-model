@@ -20,7 +20,6 @@
 <v t="vitalije.20180515102254.1"><vh>@file box_images.py</vh></v>
 <v t="vitalije.20180510154246.1"><vh>@file test_leo_data_model.py</vh></v>
 <v t="vitalije.20180510153405.1"><vh>@file leoDataModel.py</vh></v>
-<v t="vitalije.20180514194301.1"><vh>@file miniTkLeo.py</vh></v>
 <v t="ekr.20180531050445.1"><vh>** To do</vh></v>
 <v t="ekr.20180531204621.1"><vh>Recent</vh>
 <v t="ekr.20180531210200.1"><vh> unused self.test code from class LeoTreeModel</vh></v>
@@ -86,11 +85,14 @@
 <v t="vitalije.20180510194736.1"><vh>replaceNode &amp; updateParentSize</vh></v>
 </v>
 <v t="ekr.20180531162551.1"><vh>traverse stats</vh></v>
-</v>
-<v t="ekr.20180531204503.1"><vh>----- traversal</vh></v>
+<v t="ekr.20180531204503.1"><vh>----- traversal</vh>
 <v t="vitalije.20180515103828.1"><vh>draw_tree</vh></v>
 <v t="vitalije.20180515122209.1"><vh>display_items</vh></v>
 <v t="vitalije.20180516131800.1"><vh>topIndex_write</vh></v>
+</v>
+</v>
+<v t="vitalije.20180514194301.1"
+expanded="vitalije.20180514223632.1,vitalije.20180518115038.1,"><vh>@file miniTkLeo.py</vh></v>
 </vnodes>
 <tnodes>
 <t tx="ekr.20180529183702.1">def viter():
@@ -121,7 +123,8 @@
         for z in stack[:lev]:
             z[4][0] += 1
         # finally yield this node
-        yield stack[lev]</t>
+        yield stack[lev]
+</t>
 <t tx="ekr.20180530013340.1"></t>
 <t tx="ekr.20180530013345.1">
 </t>
@@ -203,8 +206,9 @@ ncalls  tottime  percall  cumtime  percall filename:lineno(function)
 <t tx="ekr.20180531050445.1">@language rest
 @wrap
 
+- Investigate drawing performance using existing vnodes, using the Leo bridge.
 - Investigate compatibility with existing vnodes.
-- Investigate performance of fast tree drawing.</t>
+</t>
 <t tx="ekr.20180531102239.1">def get_patterns(delim_st, delim_en):
     '''
     Create regex patterns based on the given comment delims.
@@ -357,7 +361,8 @@ def traverse_speed_helper():
     t1 = datetime.datetime.utcnow()
     tf(1)
 
-G.app.bind_all('&lt;Shift-F10&gt;', traverse_speed)</t>
+G.app.bind_all('&lt;Shift-F10&gt;', traverse_speed)
+</t>
 <t tx="ekr.20180531162551.1">TotTime:
     ncalls  tottime  percall  cumtime  percall filename:lineno(function)
       2001    0.162    0.000    1.995    0.001 miniTkLeo.py:302(draw_loop)
