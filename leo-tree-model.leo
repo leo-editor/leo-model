@@ -91,8 +91,7 @@
 <v t="vitalije.20180516131800.1"><vh>topIndex_write</vh></v>
 </v>
 </v>
-<v t="vitalije.20180514194301.1"
-expanded="vitalije.20180514223632.1,vitalije.20180518115038.1,"><vh>@file miniTkLeo.py</vh></v>
+<v t="vitalije.20180514194301.1"><vh>@file miniTkLeo.py</vh></v>
 </vnodes>
 <tnodes>
 <t tx="ekr.20180529183702.1">def viter():

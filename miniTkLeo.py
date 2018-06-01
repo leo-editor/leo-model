@@ -7,9 +7,9 @@ G = None
 legacy = True
 #@+<< imports >>
 #@+node:vitalije.20180518115138.1: ** << imports >>
-if not legacy:
-    import leo.core.leoGlobals as g
-    assert g
+# if not legacy:
+    # import leo.core.leoGlobals as g
+    # assert g
 import datetime
 import cProfile
 import pstats
@@ -36,7 +36,6 @@ assert paths
 #@-<< imports >>
 profile_load = False
 profile_redraw = True
-anglestr = None # set in main
 
 #@+others
 #@+node:vitalije.20180515103819.1: ** class bunch
@@ -74,6 +73,7 @@ def click_pmicon(j):
     return switchExpand
 #@+node:vitalije.20180515153501.1: ** connect_handlers
 def connect_handlers():
+    g = G.g
     bw = G.body
     tree = G.tree
     ltm = G.ltm
@@ -260,7 +260,7 @@ def connect_handlers():
         draw_tree(tree, ltm)
         ltm.invalidate_visual()
     topIndex.trace_add('write', topIndex_write)
-    bw.bind(anglestr('TextModified'), on_body_change)
+    bw.bind(g.angleBrackets('TextModified'), on_body_change)
     bw.bind('<Alt-Key-Up>', prev_node)
     bw.bind('<Alt-Key-Down>', next_node)
     bw.bind('<Alt-Key-t>', lambda x:tree.focus_set())
@@ -347,7 +347,6 @@ def draw_tree(canv, ltm):
         canv.coords(item, 0, -200)
 #@+node:vitalije.20180514223632.1: ** main
 def main(fname):
-    global anglestr
     #@+others
     #@+node:vitalije.20180518114847.1: *3* create_app
     def create_app():
@@ -452,8 +451,8 @@ def main(fname):
         g = controller.globals()
         c = controller.openLeoFile(fname)
     else:
+        import leo.core.leoGlobals as g
         g.cls()
-    anglestr = g.angleBrackets
     #
     tstart = time.monotonic()
     ltm, ltmbytes = load_xml(fname)
