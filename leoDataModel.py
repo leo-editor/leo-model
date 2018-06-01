@@ -528,6 +528,7 @@ class LeoTreeModel(object):
         '''If currently selected node is collapsed, expands it.
            In any case selects next node.'''
         i = self.selectedIndex
+            # This is a property: self.positions.index(self.selectedPosition)
         if -1 < i < len(self.nodes) - 1:
             hasChildren = self.levels[i] < self.levels[i + 1]
             p = self.selectedPosition
@@ -980,7 +981,6 @@ class LeoTreeModel(object):
     def prev_visible_index(self, pos):
         '''Assuming this node is visible, search for previous
            visible node.'''
-        g.trace('*****')
         # ( positions, nodes, attrs, levels, gnx2pos, parPos,
           # expanded, marked, selPos) = self.ivars()
 
@@ -1040,7 +1040,6 @@ class LeoTreeModel(object):
     #@+node:vitalije.20180518071115.1: *3* move_node_to_index (changed)
     def move_node_to_index(self, A, B):
         '''Moves node from index A to index B'''
-        g.trace('*****')
         # ( positions, nodes, attrs, levels, gnx2pos, parPos,
           # expanded, marked, selPos) = self.ivars()
         attrs = self.attrs

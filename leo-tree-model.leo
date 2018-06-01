@@ -20,6 +20,7 @@
 <v t="vitalije.20180515102254.1"><vh>@file box_images.py</vh></v>
 <v t="vitalije.20180510154246.1"><vh>@file test_leo_data_model.py</vh></v>
 <v t="vitalije.20180510153405.1"><vh>@file leoDataModel.py</vh></v>
+<v t="vitalije.20180514194301.1"><vh>@file miniTkLeo.py</vh></v>
 <v t="ekr.20180531050445.1"><vh>** To do</vh></v>
 <v t="ekr.20180531204621.1"><vh>Recent</vh>
 <v t="ekr.20180531210200.1"><vh> unused self.test code from class LeoTreeModel</vh></v>
@@ -48,7 +49,7 @@
 </v>
 <v t="ekr.20180531204401.1"><vh>Contains cProfile</vh>
 <v t="ekr.20180530110731.1"><vh>loadex (collects stats)</vh></v>
-<v t="ekr.20180531160419.1"><vh>traverse_speed (changed)</vh></v>
+<v t="ekr.20180531160419.1"><vh>traverse_speed</vh></v>
 </v>
 <v t="ekr.20180530191635.1"><vh>load stats</vh></v>
 <v t="ekr.20180531204548.1"><vh>most important: load file</vh>
@@ -85,19 +86,22 @@
 <v t="vitalije.20180510194736.1"><vh>replaceNode &amp; updateParentSize</vh></v>
 </v>
 <v t="ekr.20180531162551.1"><vh>traverse stats</vh></v>
-<v t="ekr.20180531204503.1"><vh>----- traversal</vh>
+<v t="ekr.20180601070705.1"><vh>----- display</vh>
+<v t="vitalije.20180515122209.1"><vh>display_items</vh></v>
+<v t="vitalije.20180518132651.1"><vh>click_pmicon</vh></v>
+<v t="vitalije.20180518132658.1"><vh>click_h</vh></v>
 <v t="vitalije.20180515103828.1"><vh>draw_tree &amp; bridge_items</vh>
 <v t="ekr.20180601045054.1"><vh>&lt;&lt; define bridge_items &gt;&gt;</vh></v>
 </v>
-<v t="vitalije.20180515122209.1"><vh>display_items</vh></v>
-<v t="vitalije.20180516131800.1"><vh>topIndex_write</vh></v>
 </v>
-</v>
-<v t="vitalije.20180514194301.1"><vh>@file miniTkLeo.py</vh></v>
-<v t="vitalije.20180515122209.1"></v>
+<v t="ekr.20180531204503.1"><vh>----- traversal</vh>
 <v t="vitalije.20180515103828.1"></v>
-<v t="vitalije.20180518132651.1"><vh>click_pmicon</vh></v>
-<v t="vitalije.20180518132658.1"><vh>click_h</vh></v>
+<v t="vitalije.20180515122209.1"></v>
+<v t="vitalije.20180516131800.1"><vh>topIndex_write</vh></v>
+<v t="vitalije.20180516105003.1"><vh>select_node_right</vh></v>
+<v t="ekr.20180531160419.1"></v>
+</v>
+</v>
 <v t="ekr.20180601055705.1"><vh>New profile stats</vh></v>
 </vnodes>
 <tnodes>
@@ -323,36 +327,37 @@ if not in_doc and not line.strip().startswith(delim_st+'@'):
         cProfile.runctx('traverse_speed_helper()',
             globals(), locals(), 'profile_stats')
         print('===== starting profile_stats')
+        pattern = r'(miniTkLeo|leo.*)\.py'
         p = pstats.Stats('profile_stats')
-        p.sort_stats('tottime').print_stats(100)
-            # p.strip_dirs().
-            # .print_stats('leoDataModel.py', 50)
+        p.strip_dirs().sort_stats('tottime').print_stats(pattern, 50)
     else:
         traverse_speed_helper()
         
 def traverse_speed_helper():
-        
-    ltm.selectedPosition = ltm.positions[1]
-    ltm.expanded.clear()
-    ltm.invalidate_visual()
+    
+    if bridge:
+        c = G.c
+        c._currentPosition = p = c.rootPosition()
+        # c.selectPosition()
+    else:
+        ltm.selectedPosition = ltm.positions[1]
+        ltm.expanded.clear()
+        ltm.invalidate_visual()
     draw_tree(tree, ltm)
 
     def tf(i):
-        if 1:
+        if 1: # Do everything now.
             n_positions = len(ltm.positions)
             n = min(1000, n_positions)
-            for i in range(n):
-                # From alt_right:
-                bw = G.body
-                gnx = ltm.select_node_right()
-                if gnx:
-                    body = ltm.attrs[gnx][1]
-                    bw.replace('1.0', 'end', body)
-                draw_tree(tree, ltm)
-            print('===== writing profile_stats')
-            p = pstats.Stats('profile_stats')
-            p.strip_dirs().sort_stats('tottime').print_stats(50)
-                # .print_stats('leoDataModel.py', 50)
+            if bridge:
+                for i in range(n):
+                    p.moveToThreadNext()
+                    c._currentPosition = p
+                    draw_tree(tree, ltm)
+            else:
+                for i in range(n):
+                    ltm.select_node_right()
+                    draw_tree(tree, ltm)
         else:
             alt_right(None)
             if i &lt; 500 and i &lt; n_positions:
@@ -516,36 +521,46 @@ if TEST:
         i += 1
         p.moveToVisNext(c)
 </t>
-<t tx="ekr.20180601055705.1">bridge = False
+<t tx="ekr.20180601055705.1">1000 iterations
 
-1000 iterations in   2.22 sec
+bridge = False
 
-TotTime:
-    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-      2001    0.162    0.000    1.995    0.001 miniTkLeo.py:302(draw_loop)
-     30005    0.074    0.000    0.091    0.000 leoDataModel.py:482(display_items)
+         806634 function calls in 1.018 seconds
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     1001    0.082    0.000    1.006    0.001 miniTkLeo.py:285(draw_tree)
+    15007    0.032    0.000    0.041    0.000 leoDataModel.py:440(display_items)
+     1000    0.003    0.000    0.010    0.000 leoDataModel.py:527(select_node_right)
+        1    0.002    0.002    1.017    1.017 miniTkLeo.py:227(tf)
+     1001    0.001    0.000    0.006    0.000 miniTkLeo.py:531(rows_count)
+     2001    0.001    0.000    0.013    0.000 leoDataModel.py:270(selectedIndex)
+     1001    0.001    0.000    0.001    0.000 leoDataModel.py:244(ivars)
+      185    0.000    0.000    0.000    0.000 leoDataModel.py:547(invalidate_visual)
+        1    0.000    0.000    1.017    1.017 miniTkLeo.py:215(traverse_speed_helper)
+       12    0.000    0.000    0.000    0.000 miniTkLeo.py:44(click_h)
+        6    0.000    0.000    0.000    0.000 miniTkLeo.py:56(click_pmicon)
      
 bridge = True
 
-1000 iterations in   2.66 sec
+         1552877 function calls in 1.199 seconds
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-   103079    0.875    0.000    1.798    0.000 {method 'call' of '_tkinter.tkapp' objects}
-     2001    0.118    0.000    2.424    0.001 miniTkLeo.py:284(draw_tree)
-    14007    0.083    0.000    0.643    0.000 leoNodes.py:846(isVisible)
-    18009    0.082    0.000    1.064    0.000 miniTkLeo.py:289(bridge_items)
-    56028    0.078    0.000    0.169    0.000 leoCommands.py:991(positionExists)
-   184092    0.076    0.000    0.076    0.000 leoNodes.py:198(__init__)
-   168084    0.074    0.000    0.138    0.000 leoNodes.py:1338(copy)
-    84042    0.067    0.000    0.216    0.000 leoNodes.py:528(self_and_siblings)
-    70035    0.064    0.000    0.088    0.000 leoNodes.py:1150(moveToNext)
-    16008    0.056    0.000    0.822    0.000 leoNodes.py:1257(moveToVisNext)
-   424879    0.055    0.000    0.055    0.000 {built-in method builtins.isinstance}
-    70035    0.046    0.000    0.060    0.000 leoNodes.py:212(__eq__)
-    56028    0.039    0.000    0.208    0.000 leoNodes.py:824(isAncestorOf)
-    88044    0.027    0.000    0.027    0.000 leoNodes.py:1025(_parentVnode)
-    56028    0.027    0.000    0.031    0.000 leoNodes.py:2245(isNthChildOf)
-   206103    0.026    0.000    0.026    0.000 leoNodes.py:282(__bool__)</t>
+     1001    0.060    0.000    1.192    0.001 miniTkLeo.py:285(draw_tree)
+     7007    0.041    0.000    0.327    0.000 leoNodes.py:846(isVisible)
+    28028    0.039    0.000    0.087    0.000 leoCommands.py:991(positionExists)
+     9009    0.039    0.000    0.521    0.000 miniTkLeo.py:291(bridge_items)
+    85086    0.036    0.000    0.036    0.000 leoNodes.py:198(__init__)
+    77077    0.035    0.000    0.065    0.000 leoNodes.py:1338(copy)
+    35851    0.034    0.000    0.047    0.000 leoNodes.py:1150(moveToNext)
+    42042    0.034    0.000    0.111    0.000 leoNodes.py:528(self_and_siblings)
+     8008    0.026    0.000    0.409    0.000 leoNodes.py:1257(moveToVisNext)
+    35035    0.023    0.000    0.030    0.000 leoNodes.py:212(__eq__)
+    28028    0.020    0.000    0.107    0.000 leoNodes.py:824(isAncestorOf)
+    45852    0.014    0.000    0.014    0.000 leoNodes.py:1025(_parentVnode)
+    28028    0.014    0.000    0.016    0.000 leoNodes.py:2245(isNthChildOf)
+   103279    0.013    0.000    0.013    0.000 leoNodes.py:282(__bool__)
+     8009    0.012    0.000    0.018    0.000 leoCommands.py:1022(rootPosition)</t>
+<t tx="ekr.20180601070705.1"></t>
 <t tx="vitalije.20180510103732.1">def load_derived_file(lines):
     '''A generator yielding tuples: (gnx, h, b, level).'''
     # pylint: disable=no-member
@@ -1006,6 +1021,20 @@ interested to check.
             i += 1
         else:
             i += treeSize
+</t>
+<t tx="vitalije.20180516105003.1">def select_node_right(self, ev=None):
+    '''If currently selected node is collapsed, expands it.
+       In any case selects next node.'''
+    i = self.selectedIndex
+        # This is a property: self.positions.index(self.selectedPosition)
+    if -1 &lt; i &lt; len(self.nodes) - 1:
+        hasChildren = self.levels[i] &lt; self.levels[i + 1]
+        p = self.selectedPosition
+        if hasChildren and p not in self.expanded:
+            self.expanded.add(p)
+            self.invalidate_visual()
+        self.selectedPosition = self.positions[i + 1]
+        return self.nodes[i + 1]
 </t>
 <t tx="vitalije.20180516131800.1">def topIndex_write(a, b, c):
     return draw_tree(tree, ltm)

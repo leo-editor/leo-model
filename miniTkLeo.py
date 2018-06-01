@@ -198,7 +198,7 @@ def connect_handlers():
         draw_tree(tree, ltm)
         ltm.invalidate_visual()
         return 'break'
-    #@+node:ekr.20180531160419.1: *3* traverse_speed (changed)
+    #@+node:ekr.20180531160419.1: *3* traverse_speed
     def traverse_speed(x):
         '''Traverse the entire tree.'''
         g.cls()
@@ -206,36 +206,37 @@ def connect_handlers():
             cProfile.runctx('traverse_speed_helper()',
                 globals(), locals(), 'profile_stats')
             print('===== starting profile_stats')
+            pattern = r'(miniTkLeo|leo.*)\.py'
             p = pstats.Stats('profile_stats')
-            p.sort_stats('tottime').print_stats(100)
-                # p.strip_dirs().
-                # .print_stats('leoDataModel.py', 50)
+            p.strip_dirs().sort_stats('tottime').print_stats(pattern, 50)
         else:
             traverse_speed_helper()
             
     def traverse_speed_helper():
-            
-        ltm.selectedPosition = ltm.positions[1]
-        ltm.expanded.clear()
-        ltm.invalidate_visual()
+        
+        if bridge:
+            c = G.c
+            c._currentPosition = p = c.rootPosition()
+            # c.selectPosition()
+        else:
+            ltm.selectedPosition = ltm.positions[1]
+            ltm.expanded.clear()
+            ltm.invalidate_visual()
         draw_tree(tree, ltm)
 
         def tf(i):
-            if 1:
+            if 1: # Do everything now.
                 n_positions = len(ltm.positions)
                 n = min(1000, n_positions)
-                for i in range(n):
-                    # From alt_right:
-                    bw = G.body
-                    gnx = ltm.select_node_right()
-                    if gnx:
-                        body = ltm.attrs[gnx][1]
-                        bw.replace('1.0', 'end', body)
-                    draw_tree(tree, ltm)
-                print('===== writing profile_stats')
-                p = pstats.Stats('profile_stats')
-                p.strip_dirs().sort_stats('tottime').print_stats(50)
-                    # .print_stats('leoDataModel.py', 50)
+                if bridge:
+                    for i in range(n):
+                        p.moveToThreadNext()
+                        c._currentPosition = p
+                        draw_tree(tree, ltm)
+                else:
+                    for i in range(n):
+                        ltm.select_node_right()
+                        draw_tree(tree, ltm)
             else:
                 alt_right(None)
                 if i < 500 and i < n_positions:
@@ -485,6 +486,7 @@ def main(fname):
         )
         g = controller.globals()
         c = controller.openLeoFile(fname)
+        g.trace(c)
     else:
         import leo.core.leoGlobals as g
         g.cls()
