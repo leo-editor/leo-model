@@ -499,8 +499,10 @@ if __name__ == '__main__':
         fname = sys.argv[1]
     else:
         fname = "c:/leo.repo/leo-editor/leo/core/leoPy.leo"
-        ### print('usage: python miniTkLeo.py <leo document>')
-        ### sys.exit()
+        if not os.path.exists(fname):
+            print('not found: %s' % fname)
+            print('usage: python miniTkLeo.py <leo document>')
+            sys.exit()
     G = main(fname)
         # G is a bunch: app, body, log, q, topIndex (a Tk intVar)
     connect_handlers()
