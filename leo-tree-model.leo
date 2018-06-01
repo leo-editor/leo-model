@@ -904,15 +904,10 @@ interested to check.
 <t tx="vitalije.20180515103828.1">def draw_tree(canv, ltm):
     '''Redraw the entire visible part of the tree.'''
     g = G.g
-    &lt;&lt; define bridge_items &gt;&gt;
     assert g
-    if bridge:
-        display_items = bridge_items
-        # def display_items(skip, count):
-            # for z in bridge_items(self=ltm, skip=skip, count=count):
-                # yield z
-    else:
-        display_items = ltm.display_items
+    &lt;&lt; define bridge_items &gt;&gt;
+        # This binds ltm in bridge_items.
+    display_items = bridge_items if bridge else ltm.display_items
     HR = 24 # pixels/per row
     LW = 2 * HR
     count = rows_count(HR)
@@ -945,9 +940,9 @@ interested to check.
         else:
             fg = '#a0a070'
         #
-        # Update or add this item.
+        # Update or add the items.
         if i + 2 &lt; len(items):
-            # The row exists.  Update the 3 items.
+            # The row exists.  Update the items.
             if plusMinusIcon:
                 canv.itemconfigure(items[i], image=plusMinusIcon)
                 canv.coords(items[i], x, y)
@@ -969,7 +964,7 @@ interested to check.
     # Hide any extra item on canvas 
     for item in items[i + 3:]:
         canv.coords(item, 0, -200)
-    # g.trace('DREW %s nodes' % (j+1))
+    # g.trace('%s nodes' % (j+1))
 </t>
 <t tx="vitalije.20180515122209.1">def display_items(self, skip=0, count=None):
     '''

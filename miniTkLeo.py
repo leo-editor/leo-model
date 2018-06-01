@@ -284,6 +284,7 @@ def connect_handlers():
 def draw_tree(canv, ltm):
     '''Redraw the entire visible part of the tree.'''
     g = G.g
+    assert g
     #@+<< define bridge_items >>
     #@+node:ekr.20180601045054.1: *3* << define bridge_items >>
     def bridge_items(skip=0, count=None):
@@ -320,14 +321,8 @@ def draw_tree(canv, ltm):
             i += 1
             p.moveToVisNext(c)
     #@-<< define bridge_items >>
-    assert g
-    if bridge:
-        display_items = bridge_items
-        # def display_items(skip, count):
-            # for z in bridge_items(self=ltm, skip=skip, count=count):
-                # yield z
-    else:
-        display_items = ltm.display_items
+        # This binds ltm in bridge_items.
+    display_items = bridge_items if bridge else ltm.display_items
     HR = 24 # pixels/per row
     LW = 2 * HR
     count = rows_count(HR)
@@ -360,9 +355,9 @@ def draw_tree(canv, ltm):
         else:
             fg = '#a0a070'
         #
-        # Update or add this item.
+        # Update or add the items.
         if i + 2 < len(items):
-            # The row exists.  Update the 3 items.
+            # The row exists.  Update the items.
             if plusMinusIcon:
                 canv.itemconfigure(items[i], image=plusMinusIcon)
                 canv.coords(items[i], x, y)
@@ -384,7 +379,7 @@ def draw_tree(canv, ltm):
     # Hide any extra item on canvas 
     for item in items[i + 3:]:
         canv.coords(item, 0, -200)
-    # g.trace('DREW %s nodes' % (j+1))
+    # g.trace('%s nodes' % (j+1))
 #@+node:vitalije.20180514223632.1: ** main
 def main(fname):
     #@+others
